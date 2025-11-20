@@ -1,0 +1,5 @@
+{
+  "name": "GeoLinear - Interactive Line Explorer",
+  "description": "A spectacular, interactive visualization of linear equations. Explore the relationship between points, slope, and intercepts on a Cartesian plane.",
+  "requestFramePermissions": []
+}
