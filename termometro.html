@@ -3,35 +3,36 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Termometro: numeri positivi e negativi</title>
+  <title>Termometro colorato: sopra e sotto lo zero</title>
   <style>
-    /* Impostazione generale: leggibile, pulita, stampabile */
     body{
-      font-family: Arial, Helvetica, sans-serif;
-      margin: 16px;
-      line-height: 1.35;
-      color:#111;
+      font-family: "Nunito", Arial, Helvetica, sans-serif;
+      margin: 0;
+      padding: 18px;
+      line-height: 1.45;
+      color:#0f172a;
+      background: radial-gradient(circle at 10% 10%, #f8fafc, #eef2ff 40%, #e0f2fe 80%);
     }
     .wrap{
-      max-width: 980px;
+      max-width: 1100px;
       margin: 0 auto;
       display: grid;
       grid-template-columns: 360px 1fr;
-      gap: 18px;
+      gap: 20px;
     }
-    @media (max-width: 860px){
+    @media (max-width: 900px){
       .wrap{ grid-template-columns: 1fr; }
     }
 
-    h1{ font-size: 20px; margin: 0 0 10px 0; }
-    h2{ font-size: 16px; margin: 14px 0 8px 0; }
+    h1{ font-size: 24px; margin: 0 0 12px 0; color: #0b5ed7; }
+    h2{ font-size: 18px; margin: 14px 0 8px 0; color: #0ea5e9; }
     p{ margin: 8px 0; }
 
     .card{
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      padding: 12px;
-      box-shadow: 0 1px 2px rgba(0,0,0,.06);
+      border: 1px solid #dbeafe;
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: 0 8px 20px rgba(15,23,42,0.06);
       background: #fff;
     }
 
@@ -39,17 +40,32 @@
     .thermo-area{
       display: grid;
       grid-template-columns: 120px 1fr;
-      gap: 10px;
+      gap: 14px;
       align-items: center;
     }
     .thermo{
       width: 64px;
       height: 360px;
-      border: 2px solid #222;
+      border: 3px solid #0f172a;
       border-radius: 40px;
       position: relative;
       margin: 8px auto;
-      background: #f6f6f6;
+      background: linear-gradient(to top, #c7d2fe 0%, #e0f2fe 50%, #fef9c3 75%, #fbbf24 100%);
+    }
+    .thermo:after{
+      /* linea di zero ben visibile */
+      content:"0°";
+      position:absolute;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      top: 50%;
+      padding: 2px 6px;
+      border-radius: 8px;
+      font-size: 12px;
+      background:#fff7ed;
+      border: 2px solid #f97316;
+      color:#c2410c;
+      font-weight: 700;
     }
     .bulb{
       position: absolute;
@@ -58,9 +74,9 @@
       transform: translateX(-50%);
       width: 82px;
       height: 82px;
-      border: 2px solid #222;
+      border: 3px solid #0f172a;
       border-radius: 50%;
-      background: #f6f6f6;
+      background: radial-gradient(circle at 30% 30%, #fde68a, #f97316 70%);
       box-sizing: border-box;
     }
     .fill{
@@ -70,7 +86,7 @@
       bottom: 10px;
       width: 26px;
       border-radius: 16px;
-      background: #555; /* neutro: non affidarsi al colore per capire il segno */
+      background: linear-gradient(to top, #0ea5e9, #22d3ee 40%, #facc15 60%, #fb7185);
       height: 50%;
     }
     .fill:after{
@@ -83,13 +99,16 @@
       width: 64px;
       height: 64px;
       border-radius: 50%;
-      background:#555;
+      background: radial-gradient(circle at 30% 30%, #22d3ee, #2563eb 70%);
     }
 
     .scale{
       height: 360px;
       position: relative;
       padding-left: 8px;
+      background: linear-gradient(to top, rgba(34,197,235,0.15), rgba(14,165,233,0.1) 50%, rgba(250,204,21,0.18));
+      border-radius: 12px;
+      border: 1px dashed #cbd5e1;
     }
     .tick{
       position: absolute;
@@ -98,45 +117,55 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: 13px;
+      font-size: 14px;
+      font-weight: 700;
+      color: #0f172a;
     }
     .tick .line{
       width: 14px;
       height: 0;
-      border-top: 2px solid #333;
+      border-top: 3px solid #0f172a;
       flex: 0 0 auto;
     }
-    .tick.zero .line{ border-top-width: 3px; }
+    .tick.zero .line{ border-top-color: #f97316; border-top-width: 4px; }
     .tick .label{
       min-width: 40px;
       font-variant-numeric: tabular-nums;
+      padding: 2px 6px;
+      border-radius: 8px;
+      background: #e0f2fe;
+      border: 1px solid #bae6fd;
     }
+    .tick.negative .label{ background:#e0f2fe; color:#075985; }
+    .tick.positive .label{ background:#fef3c7; color:#92400e; border-color:#fde68a; }
 
     .readout{
       font-size: 16px;
-      padding: 10px;
-      border: 1px dashed #aaa;
-      border-radius: 10px;
-      background: #fafafa;
+      padding: 12px;
+      border: 2px solid #c7d2fe;
+      border-radius: 12px;
+      background: #eef2ff;
     }
     .readout strong{ font-size: 18px; }
 
     .controls{
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 10px;
+      gap: 12px;
       margin-top: 10px;
     }
     .controls button{
-      padding: 10px;
-      border-radius: 10px;
-      border: 1px solid #222;
-      background: #fff;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid #0f172a;
+      background: linear-gradient(120deg, #fff, #dbeafe);
       cursor: pointer;
       font-size: 14px;
+      font-weight: 700;
+      color: #0f172a;
     }
     .controls button:focus{
-      outline: 3px solid #999;
+      outline: 3px solid #38bdf8;
       outline-offset: 2px;
     }
 
@@ -147,39 +176,46 @@
       flex-wrap: wrap;
       margin-top: 10px;
     }
-    label{ font-size: 14px; }
+    label{ font-size: 15px; font-weight: 700; color:#0f172a; }
     input[type="number"]{
       width: 90px;
       padding: 8px;
-      border-radius: 10px;
-      border: 1px solid #888;
-      font-size: 14px;
+      border-radius: 12px;
+      border: 1px solid #94a3b8;
+      font-size: 15px;
     }
     .small{
-      font-size: 13px;
-      color:#333;
+      font-size: 14px;
+      color:#0f172a;
+      background: #ecfeff;
+      border: 1px dashed #67e8f9;
+      border-radius: 10px;
+      padding: 8px;
     }
     .box-def{
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      padding: 10px;
-      background: #fcfcfc;
+      border: 1px solid #d9f99d;
+      border-radius: 12px;
+      padding: 12px;
+      background: #fefce8;
+      display: grid;
+      gap: 8px;
     }
     .pill{
       display: inline-block;
-      border: 1px solid #bbb;
+      border: 1px solid #67e8f9;
       border-radius: 999px;
-      padding: 3px 8px;
-      margin: 2px 4px 2px 0;
-      font-size: 12px;
-      background: #fff;
+      padding: 6px 10px;
+      margin: 4px 6px 4px 0;
+      font-size: 13px;
+      background: #e0f2fe;
+      font-weight: 700;
     }
 
     .task{
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      padding: 10px;
-      background: #fff;
+      border: 2px solid #c7d2fe;
+      border-radius: 12px;
+      padding: 12px;
+      background: #f8fafc;
       margin-top: 10px;
     }
     .task .q{
@@ -187,12 +223,13 @@
       margin-bottom: 6px;
     }
     .task button{
-      padding: 8px 10px;
-      border-radius: 10px;
-      border: 1px solid #222;
-      background: #fff;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid #0f172a;
+      background: linear-gradient(120deg, #fff, #fef3c7);
       cursor: pointer;
-      font-size: 13px;
+      font-size: 14px;
+      font-weight: 700;
     }
     .solution{
       margin-top: 8px;
@@ -211,12 +248,12 @@
   </style>
 </head>
 <body>
-  <h1>Numeri positivi e negativi con un termometro (sopra e sotto lo zero)</h1>
+  <h1>Termometro colorato: sopra e sotto lo zero</h1>
 
   <div class="wrap">
     <!-- Colonna sinistra: termometro + controlli -->
     <div class="card" aria-label="Termometro interattivo">
-      <h2>Termometro</h2>
+      <h2>Muovi la temperatura</h2>
 
       <div class="thermo-area">
         <div>
@@ -230,74 +267,58 @@
       </div>
 
       <div class="readout" aria-live="polite">
-        Temperatura attuale: <strong id="currentTxt">0</strong><br/>
-        Temperatura precedente: <span id="prevTxt">0</span><br/>
-        Variazione: <strong id="deltaTxt">+0</strong>
+        Temperatura ora: <strong id="currentTxt">0</strong><br/>
+        Prima era: <span id="prevTxt">0</span><br/>
+        Spostamento: <strong id="deltaTxt">+0</strong>
         <div class="small" id="deltaSentence"></div>
       </div>
 
       <div class="controls" aria-label="Controlli">
-        <button type="button" id="up1">Sali di 1 ( +1 )</button>
-        <button type="button" id="down1">Scendi di 1 ( −1 )</button>
-        <button type="button" id="up5">Sali di 5 ( +5 )</button>
-        <button type="button" id="down5">Scendi di 5 ( −5 )</button>
+        <button type="button" id="up1">Sali di 1</button>
+        <button type="button" id="down1">Scendi di 1</button>
+        <button type="button" id="up5">Sali di 5</button>
+        <button type="button" id="down5">Scendi di 5</button>
       </div>
 
       <div class="row">
-        <label for="setValue">Imposta temperatura:</label>
-        <input type="number" id="setValue" min="-20" max="20" step="1" value="0" />
-        <button type="button" id="applySet">Applica</button>
-        <button type="button" id="reset">Azzera (0)</button>
+        <label for="setValue">Scegli tu:</label>
+        <input type="number" id="setValue" min="-15" max="15" step="1" value="0" />
+        <button type="button" id="applySet">Vai!</button>
+        <button type="button" id="reset">Torna a 0</button>
       </div>
 
       <p class="small">
-        Regola pratica: se vai <strong>su</strong> il numero <strong>aumenta</strong> (variazione positiva). Se vai <strong>giù</strong> il numero <strong>diminuisce</strong> (variazione negativa).
+        ⬆️ Più alto = numero maggiore. ⬇️ Più basso = numero minore. Colori diversi aiutano a vedere sopra e sotto lo zero.
       </p>
     </div>
 
     <!-- Colonna destra: definizioni + esercizi guidati -->
     <div class="card">
-      <h2>Parole chiave</h2>
+      <h2>Parole lampo</h2>
       <div>
-        <span class="pill"><strong>positivo</strong></span>
-        <span class="pill"><strong>negativo</strong></span>
-        <span class="pill"><strong>zero</strong></span>
-        <span class="pill"><strong>variazione</strong></span>
-        <span class="pill"><strong>differenza</strong></span>
+        <span class="pill">positivo = sopra</span>
+        <span class="pill">negativo = sotto</span>
+        <span class="pill">zero = confine</span>
+        <span class="pill">variazione = spostamento</span>
       </div>
 
       <div class="box-def" style="margin-top:10px;">
-        <p><strong>Definizioni essenziali</strong></p>
-        <p><strong>Numero positivo</strong>: è <strong>maggiore di 0</strong> (sta sopra lo zero).</p>
-        <p><strong>Numero negativo</strong>: è <strong>minore di 0</strong> (sta sotto lo zero).</p>
-        <p><strong>Variazione</strong>: è “di quanto mi sposto” sulla scala (su = +, giù = −).</p>
-        <p><strong>Formula guida</strong>: <strong>finale = iniziale + variazione</strong>.</p>
+        <div><strong>Guarda i colori:</strong> giallo e arancio = sopra lo zero, azzurro = sotto.</div>
+        <div><strong>Formula rapida:</strong> arrivo = partenza + cambio.</div>
+        <div><strong>Domande facili:</strong> “Sono sopra o sotto?”, “Se scendo di 1 cosa succede?”.</div>
       </div>
 
-      <h2>Esercizi guidati</h2>
-      <p>
-        Usa il termometro e rispondi. Puoi prima muovere la temperatura, poi scrivere il calcolo.
-      </p>
+      <h2>Esercizi veloci</h2>
+      <p>Premi il pulsante, muovi il termometro, rispondi con voce o con il numero.</p>
 
       <div class="task" id="taskBox">
         <div class="q" id="taskQ">Premi “Nuovo esercizio”.</div>
         <div class="row">
           <button type="button" id="newTask">Nuovo esercizio</button>
-          <label class="mode"><input type="checkbox" id="teacherMode"/> Modalità docente (mostra soluzione)</label>
+          <label class="mode"><input type="checkbox" id="teacherMode"/> Mostra soluzione</label>
         </div>
         <div class="solution" id="taskSol"></div>
       </div>
-
-      <h2>Versione semplificata (per difficoltà cognitive)</h2>
-      <p>
-        Lavora solo tra <strong>−5</strong> e <strong>+5</strong>. Fai domande a risposta breve:
-        “Sei sopra o sotto lo zero?”, “Se scendi di 1 dove vai?”, “Qual è più freddo: −4 o −2?”.
-        Mantieni la frase fissa: <strong>inizio + cambio = arrivo</strong>.
-      </p>
-
-      <h2>Glossario minimo</h2>
-      <p><strong>Maggiore</strong>: più in alto sulla scala. <strong>Minore</strong>: più in basso sulla scala.</p>
-      <p><strong>Salire</strong>: aumentare. <strong>Scendere</strong>: diminuire.</p>
     </div>
   </div>
 
@@ -305,8 +326,8 @@
     // =========================
     // Impostazioni del termometro
     // =========================
-    const MIN = -10;
-    const MAX =  10;
+    const MIN = -15;
+    const MAX =  15;
 
     let current = 0;
     let previous = 0;
@@ -328,7 +349,7 @@
 
       for(let v = MAX; v >= MIN; v--){
         const t = document.createElement('div');
-        t.className = 'tick' + (v === 0 ? ' zero' : '');
+        t.className = 'tick' + (v === 0 ? ' zero' : (v < 0 ? ' negative' : ' positive'));
         const ratio = (MAX - v) / (MAX - MIN); // 0 in alto, 1 in basso
         t.style.top = Math.round(ratio * (height - 1)) + 'px';
 
