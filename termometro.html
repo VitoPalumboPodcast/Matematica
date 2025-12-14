@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Termometro: numeri positivi e negativi</title>
+  <style>
+    /* Impostazione generale: leggibile, pulita, stampabile */
+    body{
+      font-family: Arial, Helvetica, sans-serif;
+      margin: 16px;
+      line-height: 1.35;
+      color:#111;
+    }
+    .wrap{
+      max-width: 980px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 18px;
+    }
+    @media (max-width: 860px){
+      .wrap{ grid-template-columns: 1fr; }
+    }
+
+    h1{ font-size: 20px; margin: 0 0 10px 0; }
+    h2{ font-size: 16px; margin: 14px 0 8px 0; }
+    p{ margin: 8px 0; }
+
+    .card{
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      padding: 12px;
+      box-shadow: 0 1px 2px rgba(0,0,0,.06);
+      background: #fff;
+    }
+
+    /* Termometro */
+    .thermo-area{
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 10px;
+      align-items: center;
+    }
+    .thermo{
+      width: 64px;
+      height: 360px;
+      border: 2px solid #222;
+      border-radius: 40px;
+      position: relative;
+      margin: 8px auto;
+      background: #f6f6f6;
+    }
+    .bulb{
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 82px;
+      height: 82px;
+      border: 2px solid #222;
+      border-radius: 50%;
+      background: #f6f6f6;
+      box-sizing: border-box;
+    }
+    .fill{
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 10px;
+      width: 26px;
+      border-radius: 16px;
+      background: #555; /* neutro: non affidarsi al colore per capire il segno */
+      height: 50%;
+    }
+    .fill:after{
+      /* riempimento del bulbo */
+      content:"";
+      position:absolute;
+      left:50%;
+      transform: translateX(-50%);
+      bottom:-62px;
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background:#555;
+    }
+
+    .scale{
+      height: 360px;
+      position: relative;
+      padding-left: 8px;
+    }
+    .tick{
+      position: absolute;
+      left: 0;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+    }
+    .tick .line{
+      width: 14px;
+      height: 0;
+      border-top: 2px solid #333;
+      flex: 0 0 auto;
+    }
+    .tick.zero .line{ border-top-width: 3px; }
+    .tick .label{
+      min-width: 40px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .readout{
+      font-size: 16px;
+      padding: 10px;
+      border: 1px dashed #aaa;
+      border-radius: 10px;
+      background: #fafafa;
+    }
+    .readout strong{ font-size: 18px; }
+
+    .controls{
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .controls button{
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #222;
+      background: #fff;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .controls button:focus{
+      outline: 3px solid #999;
+      outline-offset: 2px;
+    }
+
+    .row{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    label{ font-size: 14px; }
+    input[type="number"]{
+      width: 90px;
+      padding: 8px;
+      border-radius: 10px;
+      border: 1px solid #888;
+      font-size: 14px;
+    }
+    .small{
+      font-size: 13px;
+      color:#333;
+    }
+    .box-def{
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      padding: 10px;
+      background: #fcfcfc;
+    }
+    .pill{
+      display: inline-block;
+      border: 1px solid #bbb;
+      border-radius: 999px;
+      padding: 3px 8px;
+      margin: 2px 4px 2px 0;
+      font-size: 12px;
+      background: #fff;
+    }
+
+    .task{
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 10px;
+      background: #fff;
+      margin-top: 10px;
+    }
+    .task .q{
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+    .task button{
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid #222;
+      background: #fff;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .solution{
+      margin-top: 8px;
+      padding: 8px;
+      border-radius: 10px;
+      background:#fafafa;
+      border: 1px dashed #aaa;
+      display: none;
+    }
+
+    @media print{
+      .controls, .task button, .row .mode { display: none !important; }
+      body{ margin: 0; }
+      .card{ box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <h1>Numeri positivi e negativi con un termometro (sopra e sotto lo zero)</h1>
+
+  <div class="wrap">
+    <!-- Colonna sinistra: termometro + controlli -->
+    <div class="card" aria-label="Termometro interattivo">
+      <h2>Termometro</h2>
+
+      <div class="thermo-area">
+        <div>
+          <div class="thermo" role="img" aria-label="Termometro con livello">
+            <div class="fill" id="fill"></div>
+            <div class="bulb" aria-hidden="true"></div>
+          </div>
+        </div>
+
+        <div class="scale" id="scale" aria-label="Scala dei numeri"></div>
+      </div>
+
+      <div class="readout" aria-live="polite">
+        Temperatura attuale: <strong id="currentTxt">0</strong><br/>
+        Temperatura precedente: <span id="prevTxt">0</span><br/>
+        Variazione: <strong id="deltaTxt">+0</strong>
+        <div class="small" id="deltaSentence"></div>
+      </div>
+
+      <div class="controls" aria-label="Controlli">
+        <button type="button" id="up1">Sali di 1 ( +1 )</button>
+        <button type="button" id="down1">Scendi di 1 ( −1 )</button>
+        <button type="button" id="up5">Sali di 5 ( +5 )</button>
+        <button type="button" id="down5">Scendi di 5 ( −5 )</button>
+      </div>
+
+      <div class="row">
+        <label for="setValue">Imposta temperatura:</label>
+        <input type="number" id="setValue" min="-20" max="20" step="1" value="0" />
+        <button type="button" id="applySet">Applica</button>
+        <button type="button" id="reset">Azzera (0)</button>
+      </div>
+
+      <p class="small">
+        Regola pratica: se vai <strong>su</strong> il numero <strong>aumenta</strong> (variazione positiva). Se vai <strong>giù</strong> il numero <strong>diminuisce</strong> (variazione negativa).
+      </p>
+    </div>
+
+    <!-- Colonna destra: definizioni + esercizi guidati -->
+    <div class="card">
+      <h2>Parole chiave</h2>
+      <div>
+        <span class="pill"><strong>positivo</strong></span>
+        <span class="pill"><strong>negativo</strong></span>
+        <span class="pill"><strong>zero</strong></span>
+        <span class="pill"><strong>variazione</strong></span>
+        <span class="pill"><strong>differenza</strong></span>
+      </div>
+
+      <div class="box-def" style="margin-top:10px;">
+        <p><strong>Definizioni essenziali</strong></p>
+        <p><strong>Numero positivo</strong>: è <strong>maggiore di 0</strong> (sta sopra lo zero).</p>
+        <p><strong>Numero negativo</strong>: è <strong>minore di 0</strong> (sta sotto lo zero).</p>
+        <p><strong>Variazione</strong>: è “di quanto mi sposto” sulla scala (su = +, giù = −).</p>
+        <p><strong>Formula guida</strong>: <strong>finale = iniziale + variazione</strong>.</p>
+      </div>
+
+      <h2>Esercizi guidati</h2>
+      <p>
+        Usa il termometro e rispondi. Puoi prima muovere la temperatura, poi scrivere il calcolo.
+      </p>
+
+      <div class="task" id="taskBox">
+        <div class="q" id="taskQ">Premi “Nuovo esercizio”.</div>
+        <div class="row">
+          <button type="button" id="newTask">Nuovo esercizio</button>
+          <label class="mode"><input type="checkbox" id="teacherMode"/> Modalità docente (mostra soluzione)</label>
+        </div>
+        <div class="solution" id="taskSol"></div>
+      </div>
+
+      <h2>Versione semplificata (per difficoltà cognitive)</h2>
+      <p>
+        Lavora solo tra <strong>−5</strong> e <strong>+5</strong>. Fai domande a risposta breve:
+        “Sei sopra o sotto lo zero?”, “Se scendi di 1 dove vai?”, “Qual è più freddo: −4 o −2?”.
+        Mantieni la frase fissa: <strong>inizio + cambio = arrivo</strong>.
+      </p>
+
+      <h2>Glossario minimo</h2>
+      <p><strong>Maggiore</strong>: più in alto sulla scala. <strong>Minore</strong>: più in basso sulla scala.</p>
+      <p><strong>Salire</strong>: aumentare. <strong>Scendere</strong>: diminuire.</p>
+    </div>
+  </div>
+
+  <script>
+    // =========================
+    // Impostazioni del termometro
+    // =========================
+    const MIN = -10;
+    const MAX =  10;
+
+    let current = 0;
+    let previous = 0;
+
+    const fillEl = document.getElementById('fill');
+    const scaleEl = document.getElementById('scale');
+
+    const currentTxt = document.getElementById('currentTxt');
+    const prevTxt = document.getElementById('prevTxt');
+    const deltaTxt = document.getElementById('deltaTxt');
+    const deltaSentence = document.getElementById('deltaSentence');
+
+    // =========================
+    // Scala: crea tacche da MAX a MIN (in verticale)
+    // =========================
+    function buildScale(){
+      scaleEl.innerHTML = '';
+      const height = 360;
+
+      for(let v = MAX; v >= MIN; v--){
+        const t = document.createElement('div');
+        t.className = 'tick' + (v === 0 ? ' zero' : '');
+        const ratio = (MAX - v) / (MAX - MIN); // 0 in alto, 1 in basso
+        t.style.top = Math.round(ratio * (height - 1)) + 'px';
+
+        const line = document.createElement('div');
+        line.className = 'line';
+
+        const lab = document.createElement('div');
+        lab.className = 'label';
+        lab.textContent = (v > 0 ? '+' + v : String(v));
+
+        t.appendChild(line);
+        t.appendChild(lab);
+        scaleEl.appendChild(t);
+      }
+    }
+
+    // =========================
+    // Aggiorna grafica e testi
+    // =========================
+    function clamp(x){ return Math.max(MIN, Math.min(MAX, x)); }
+
+    function fmtSigned(n){
+      if(n > 0) return '+' + n;
+      if(n === 0) return '+0';
+      return String(n);
+    }
+
+    function updateUI(){
+      current = clamp(current);
+
+      // Riempimento: mappo il valore tra MIN..MAX in percentuale
+      const percent = (current - MIN) / (MAX - MIN); // 0..1
+      // Altezza della colonna interna: minimo 6% per vedere sempre il bulbo "collegato"
+      const h = Math.max(0.06, percent) * 100;
+      fillEl.style.height = h + '%';
+
+      currentTxt.textContent = (current > 0 ? '+' + current : String(current));
+      prevTxt.textContent = (previous > 0 ? '+' + previous : String(previous));
+
+      const delta = current - previous;
+      deltaTxt.textContent = fmtSigned(delta);
+
+      if(delta > 0){
+        deltaSentence.textContent = 'È aumentata di ' + delta + ' (sei salito).';
+      }else if(delta < 0){
+        deltaSentence.textContent = 'È diminuita di ' + Math.abs(delta) + ' (sei sceso).';
+      }else{
+        deltaSentence.textContent = 'Non è cambiata.';
+      }
+    }
+
+    function setCurrent(newValue){
+      previous = current;
+      current = clamp(newValue);
+      updateUI();
+    }
+
+    // =========================
+    // Pulsanti: variazioni
+    // =========================
+    document.getElementById('up1').addEventListener('click', () => setCurrent(current + 1));
+    document.getElementById('down1').addEventListener('click', () => setCurrent(current - 1));
+    document.getElementById('up5').addEventListener('click', () => setCurrent(current + 5));
+    document.getElementById('down5').addEventListener('click', () => setCurrent(current - 5));
+
+    document.getElementById('reset').addEventListener('click', () => {
+      previous = current;
+      current = 0;
+      document.getElementById('setValue').value = 0;
+      updateUI();
+    });
+
+    document.getElementById('applySet').addEventListener('click', () => {
+      const v = parseInt(document.getElementById('setValue').value, 10);
+      if(Number.isNaN(v)) return;
+      setCurrent(v);
+    });
+
+    // =========================
+    // Esercizi: genera consegne su iniziale e variazione
+    // =========================
+    const taskQ = document.getElementById('taskQ');
+    const taskSol = document.getElementById('taskSol');
+    const teacherMode = document.getElementById('teacherMode');
+
+    function randInt(a,b){
+      return Math.floor(Math.random()*(b-a+1))+a;
+    }
+
+    function makeTask(){
+      // Iniziale tra -8 e +8, variazione tra -6 e +6 (escludo 0)
+      const start = randInt(-8, 8);
+      let change = randInt(-6, 6);
+      if(change === 0) change = 2;
+
+      const end = clamp(start + change);
+
+      const startTxt = (start > 0 ? '+' + start : String(start));
+      const changeTxt = (change > 0 ? '+' + change : String(change));
+      const endTxt = (end > 0 ? '+' + end : String(end));
+
+      // Testo consegna: linguaggio coerente con su/giù
+      const verb = (change > 0) ? 'sale' : 'scende';
+      const steps = Math.abs(change);
+
+      taskQ.textContent =
+        `Parti da ${startTxt}. Poi la temperatura ${verb} di ${steps}. Dove arrivi? ` +
+        `Scrivi anche: finale = iniziale + variazione.`;
+
+      taskSol.innerHTML =
+        `<strong>Soluzione:</strong> ${startTxt} + (${changeTxt}) = ${endTxt}.<br/>` +
+        `Quindi arrivi a <strong>${endTxt}</strong>.`;
+
+      // Imposto il termometro al valore iniziale per rendere l'esercizio “concreto”
+      previous = current;
+      current = start;
+      updateUI();
+
+      // Mostra/nasconde soluzione
+      taskSol.style.display = teacherMode.checked ? 'block' : 'none';
+    }
+
+    document.getElementById('newTask').addEventListener('click', makeTask);
+    teacherMode.addEventListener('change', () => {
+      taskSol.style.display = teacherMode.checked ? 'block' : 'none';
+    });
+
+    // Avvio
+    buildScale();
+    updateUI();
+  </script>
+</body>
+</html>
