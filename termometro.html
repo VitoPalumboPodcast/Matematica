@@ -197,25 +197,6 @@
       border-radius: 10px;
       padding: 8px;
     }
-    .box-def{
-      border: 1px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 12px;
-      background: #f8fafc;
-      display: grid;
-      gap: 8px;
-    }
-    .pill{
-      display: inline-block;
-      border: 1px solid #67e8f9;
-      border-radius: 999px;
-      padding: 6px 10px;
-      margin: 4px 6px 4px 0;
-      font-size: 13px;
-      background: #e0f2fe;
-      font-weight: 700;
-    }
-
     .task{
       border: 2px solid #c7d2fe;
       border-radius: 12px;
@@ -223,10 +204,7 @@
       background: #f8fafc;
       margin-top: 10px;
     }
-    .task .q{
-      font-weight: bold;
-      margin-bottom: 6px;
-    }
+    .task .q{ font-weight: bold; }
     .task button{
       padding: 10px 12px;
       border-radius: 12px;
@@ -243,6 +221,52 @@
       background:#fafafa;
       border: 1px dashed #aaa;
       display: none;
+    }
+
+    .task-grid{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px;
+      align-items: center;
+    }
+    .task-grid .label{
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-weight: 800;
+      color:#475569;
+      text-align: center;
+      margin-bottom: 4px;
+    }
+    .big-number{
+      font-size: 32px;
+      font-weight: 900;
+      text-align: center;
+      padding: 10px;
+      border-radius: 14px;
+      background: #fff7ed;
+      border: 2px solid #fdba74;
+      color: #9a3412;
+    }
+    .big-number.positive{
+      background: #fef3c7;
+      border-color: #fbbf24;
+      color: #92400e;
+    }
+    .big-number.negative{
+      background: #e0f2fe;
+      border-color: #38bdf8;
+      color: #0ea5e9;
+    }
+    .big-number.neutral{
+      background: #f8fafc;
+      border-color: #cbd5e1;
+      color: #0f172a;
+    }
+    .big-number.highlight{
+      background:#ecfeff;
+      border-color:#22d3ee;
+      color:#0f172a;
     }
 
     @media print{
@@ -302,30 +326,30 @@
       </div>
 
       <div class="card">
-        <h2>Parole lampo</h2>
-        <div>
-          <span class="pill">positivo = sopra</span>
-          <span class="pill">negativo = sotto</span>
-          <span class="pill">zero = confine</span>
-          <span class="pill">variazione = spostamento</span>
-        </div>
-
-        <div class="box-def" style="margin-top:10px;">
-          <div><strong>Guarda i colori:</strong> giallo e arancio = sopra lo zero, azzurro = sotto.</div>
-          <div><strong>Formula rapida:</strong> arrivo = partenza + cambio.</div>
-          <div><strong>Domande facili:</strong> “Sono sopra o sotto?”, “Se scendo di 1 cosa succede?”.</div>
-        </div>
-
-        <h2>Esercizi veloci</h2>
-        <p>Premi il pulsante, muovi il termometro, rispondi con voce o con il numero.</p>
+        <h2>Allenamento visivo</h2>
 
         <div class="task" id="taskBox">
-          <div class="q" id="taskQ">Premi “Nuovo esercizio”.</div>
+          <div class="task-grid">
+            <div>
+              <div class="label">Partenza</div>
+              <div class="big-number neutral" id="startValue">0</div>
+            </div>
+            <div>
+              <div class="label">Variazione</div>
+              <div class="big-number neutral" id="changeValue">0</div>
+            </div>
+            <div>
+              <div class="label">Arrivo?</div>
+              <div class="big-number highlight" id="taskQ">Premi “Nuovo esercizio”.</div>
+            </div>
+          </div>
+
           <div class="row">
             <button type="button" id="newTask">Nuovo esercizio</button>
             <label class="mode"><input type="checkbox" id="teacherMode"/> Mostra soluzione</label>
           </div>
-          <div class="solution" id="taskSol"></div>
+
+          <div class="solution big-number" id="taskSol"></div>
         </div>
       </div>
     </div>
@@ -443,9 +467,18 @@
     const taskQ = document.getElementById('taskQ');
     const taskSol = document.getElementById('taskSol');
     const teacherMode = document.getElementById('teacherMode');
+    const startValue = document.getElementById('startValue');
+    const changeValue = document.getElementById('changeValue');
 
     function randInt(a,b){
       return Math.floor(Math.random()*(b-a+1))+a;
+    }
+
+    function styleNumber(el, value){
+      el.textContent = (value > 0 ? '+' + value : String(value));
+      el.classList.toggle('positive', value > 0);
+      el.classList.toggle('negative', value < 0);
+      el.classList.toggle('neutral', value === 0);
     }
 
     function makeTask(){
@@ -460,17 +493,14 @@
       const changeTxt = (change > 0 ? '+' + change : String(change));
       const endTxt = (end > 0 ? '+' + end : String(end));
 
-      // Testo consegna: linguaggio coerente con su/giù
-      const verb = (change > 0) ? 'sale' : 'scende';
-      const steps = Math.abs(change);
+      styleNumber(startValue, start);
+      styleNumber(changeValue, change);
 
-      taskQ.textContent =
-        `Parti da ${startTxt}. Poi la temperatura ${verb} di ${steps}. Dove arrivi? ` +
-        `Scrivi anche: finale = iniziale + variazione.`;
+      taskQ.textContent = `${startTxt} → ${changeTxt}`;
 
       taskSol.innerHTML =
-        `<strong>Soluzione:</strong> ${startTxt} + (${changeTxt}) = ${endTxt}.<br/>` +
-        `Quindi arrivi a <strong>${endTxt}</strong>.`;
+        `${startTxt} + (${changeTxt}) = <strong>${endTxt}</strong>. ` +
+        `Porta il termometro fino a <strong>${endTxt}</strong>.`;
 
       // Imposto il termometro al valore iniziale per rendere l'esercizio “concreto”
       previous = current;
